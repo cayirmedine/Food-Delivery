@@ -17,6 +17,11 @@ module.exports = (sequelize, Sequelize) => {
       addressDetail: {
         type: Sequelize.STRING,
       },
+
+      isRestaurantAddress: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false,
+      },
     },
     {
       freezeTableName: true,
