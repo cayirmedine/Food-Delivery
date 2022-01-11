@@ -29,6 +29,10 @@ const fav = require("../models/common/favorites");
 //Cart Models
 const order = require("../models/cart/order");
 
+//Relational Models
+const restaurantCatRelational = require("../models/relations/restaurantCat");
+const orderFood = require("../models/relations/orderFood");
+
 const userModel = user(sequelize, Sequelize);
 const restaurantCatModel = restaurantCat(sequelize, Sequelize);
 const restaurantModel = restaurant(sequelize, Sequelize);
@@ -37,6 +41,11 @@ const addressModel = address(sequelize, Sequelize);
 const cityModel = city(sequelize, Sequelize);
 const favModel = fav(sequelize, Sequelize);
 const orderModel = order(sequelize, Sequelize);
+const restaurantCatRelationalModel = restaurantCatRelational(
+  sequelize,
+  Sequelize
+);
+const orderFoodModel = orderFood(sequelize, Sequelize);
 
 addressModel.belongsTo(userModel, { foreignKey: "user_id" });
 userModel.hasMany(addressModel, { foreignKey: "user_id" });
@@ -45,10 +54,14 @@ restaurantModel.hasOne(addressModel, { foreignKey: "restaurant_id" });
 addressModel.belongsTo(cityModel, { foreignKey: "city_id" });
 cityModel.hasMany(addressModel, { foreignKey: "city_id" });
 restaurantModel.belongsToMany(restaurantCatModel, {
-  through: "Restaurant_Cat_Relation",
+  as: "RestaurantCats",
+  through: restaurantCatRelationalModel,
+  foreignKey: "restaurant_id",
 });
 restaurantCatModel.belongsToMany(restaurantModel, {
-  through: "Restaurant_Cat_Relation",
+  as: "CatRestaurants",
+  through: restaurantCatRelationalModel,
+  foreignKey: "cat_id",
 });
 foodModel.belongsTo(restaurantModel, { foreignKey: "restaurant_id" });
 restaurantModel.hasMany(foodModel, { foreignKey: "restaurant_id" });
@@ -60,8 +73,16 @@ orderModel.belongsTo(userModel, { foreignKey: "user_id" });
 userModel.hasMany(orderModel, { foreignKey: "user_id" });
 orderModel.belongsTo(addressModel, { foreignKey: "address_id" });
 addressModel.hasMany(orderModel, { foreignKey: "address_id" });
-orderModel.belongsToMany(foodModel, { through: "Order_Food_Relation" });
-foodModel.belongsToMany(orderModel, { through: "Order_Food_Relation" });
+orderModel.belongsToMany(foodModel, {
+  as: "FoodOrders",
+  through: orderFoodModel,
+  foreignKey: "food_id",
+});
+foodModel.belongsToMany(orderModel, {
+  as: "OrderFoods",
+  through: orderFoodModel,
+  foreignKey: "order_id",
+});
 
 module.exports = {
   userModel,
@@ -72,6 +93,8 @@ module.exports = {
   cityModel,
   favModel,
   orderModel,
+  restaurantCatRelationalModel,
+  orderFoodModel,
   sequelize,
   Sequelize,
 };
