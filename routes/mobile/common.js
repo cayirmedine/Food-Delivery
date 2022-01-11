@@ -25,3 +25,5 @@ router.post("/add-address", commonController.addAddress);
 router.put("/update-address/:addressId", commonController.updateAddress);
 
 router.delete("/delete-address/:addressId", commonController.deleteAddress);
+
+module.exports = router;

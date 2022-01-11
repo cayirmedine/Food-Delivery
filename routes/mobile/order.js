@@ -8,3 +8,5 @@ router.get("/users-orders/:userId", orderController.findUsersOrders);
 router.get("/order/:orderId", orderController.findOneOrder);
 
 router.post("/make-order", orderController.makeOrder);
+
+module.exports = router;
