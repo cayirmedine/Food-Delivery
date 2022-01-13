@@ -260,6 +260,7 @@ module.exports = {
 
       res.json({ status: "success", data: food });
     } catch (error) {
+      console.log("testt")
       res.status(500).json({ status: "error", data: error });
       await t.rollback();
       next(error);
