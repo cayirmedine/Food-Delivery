@@ -21,12 +21,17 @@ module.exports = (sequelize, Sequelize) => {
             type: Sequelize.DOUBLE,
         },
 
-        calorie: {
+        calories: {
             type: Sequelize.DOUBLE,
         },
 
         description: {
             type: Sequelize.STRING,
+        },
+
+        rating: {
+          type: Sequelize.DOUBLE,
+          defaultValue: "0.0",
         },
       },
       {
