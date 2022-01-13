@@ -18,7 +18,7 @@ module.exports = (sequelize, Sequelize) => {
       },
 
       deliveryTime: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.STRING,
       },
 
       rating: {
@@ -27,7 +27,7 @@ module.exports = (sequelize, Sequelize) => {
       },
 
       priceRating: {
-        type: Sequelize.STRING,
+        type: Sequelize.INTEGER,
       },
     },
     {
