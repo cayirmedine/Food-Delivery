@@ -80,7 +80,7 @@ module.exports = {
               "description",
               "calories",
               "unitPrice",
-              "rating"
+              "rating",
             ],
           },
         ],
@@ -89,6 +89,7 @@ module.exports = {
 
       await res.json({ status: "success", data: restaurants });
     } catch (error) {
+      console.log("HATAA", error)
       res.status(500).json({ status: "error", data: error });
       next(error);
     }
@@ -118,7 +119,7 @@ module.exports = {
         include: [
           {
             model: restaurantModel,
-            as: "RestaurantCats",
+            // as: "RestaurantCats",
             attributes: [
               "id",
               "title",
@@ -165,12 +166,16 @@ module.exports = {
         { transaction: t }
       );
 
+      console.log("RESTAURANT ID", restaurant.dataValues.id)
       for (const cat_id of cat_ids) {
+        await console.log("CAT ID", cat_id);
+        await console.log("RESTAURANT ID", restaurant.dataValues.id);
+
         await modelService.create(
           restaurantCatRelationalModel,
           {
             cat_id,
-            restaurant_id: Number(restaurant.dataValues.id),
+            restaurant_id: Number(restaurant.dataValues.id),  
           },
           { transaction: t }
         );
@@ -180,6 +185,7 @@ module.exports = {
 
       res.json({ status: "success", data: restaurant });
     } catch (error) {
+      await console.log("HATAA", error);
       res.status(500).json({ status: "error", data: error });
       await t.rollback();
       next(error);
@@ -225,7 +231,8 @@ module.exports = {
   },
 
   createFood: async (req, res, next) => {
-    const { title, unitPrice, calories, description, rating, restaurant_id } = req.body;
+    const { title, unitPrice, calories, description, rating, restaurant_id } =
+      req.body;
     const { location, mimetype, size } = req.file;
 
     const t = await sequelize.transaction();
@@ -260,7 +267,7 @@ module.exports = {
 
       res.json({ status: "success", data: food });
     } catch (error) {
-      console.log("testt")
+      console.log("testt");
       res.status(500).json({ status: "error", data: error });
       await t.rollback();
       next(error);

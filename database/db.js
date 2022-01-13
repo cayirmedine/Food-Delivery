@@ -9,7 +9,7 @@ var sequelize = new Sequelize(
   process.env.DB_PASSWORD,
   {
     host: process.env.DB_HOST,
-    dialect: 'mysql',
+    dialect: "mysql",
   }
 );
 
@@ -53,18 +53,25 @@ addressModel.belongsTo(restaurantModel, { foreignKey: "restaurant_id" });
 restaurantModel.hasOne(addressModel, { foreignKey: "restaurant_id" });
 addressModel.belongsTo(cityModel, { foreignKey: "city_id" });
 cityModel.hasMany(addressModel, { foreignKey: "city_id" });
-restaurantModel.belongsToMany(restaurantCatModel, {
-  as: "RestaurantCats",
-  through: restaurantCatRelationalModel,
-  foreignKey: "restaurant_id",
-});
 restaurantCatModel.belongsToMany(restaurantModel, {
   as: "CatRestaurants",
   through: restaurantCatRelationalModel,
   foreignKey: "cat_id",
 });
+restaurantModel.belongsToMany(restaurantCatModel, {
+  as: "RestaurantCats",
+  through: restaurantCatRelationalModel,
+  foreignKey: "restaurant_id",
+});
+restaurantCatRelationalModel.belongsTo(restaurantModel, {
+  foreignKey: "restaurant_id",
+});
+
+restaurantModel.hasMany(restaurantCatRelationalModel, {
+  foreignKey: "restaurant_id",
+});
 foodModel.belongsTo(restaurantModel, { foreignKey: "restaurant_id" });
-restaurantModel.hasMany(foodModel, { foreignKey: "restaurant_id" });
+restaurantModel.hasMany(foodModel, { foreignKey: "restaurant_id", as: "menu" });
 favModel.belongsTo(userModel, { foreignKey: "user_id" });
 userModel.hasMany(favModel, { foreignKey: "user_id" });
 favModel.belongsTo(restaurantModel, { foreignKey: "restaurant_id" });
