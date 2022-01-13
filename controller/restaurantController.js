@@ -68,7 +68,24 @@ module.exports = {
 
   findAllRestaurants: async (req, res, next) => {
     try {
-      const restaurants = await modelService.findAll(restaurantModel);
+      let options = {
+        include: [
+          {
+            model: foodModel,
+            as: "menu",
+            attributes: [
+              "id",
+              "title",
+              "photoLink",
+              "description",
+              "calories",
+              "unitPrice",
+              "rating"
+            ],
+          },
+        ],
+      };
+      const restaurants = await modelService.findAll(restaurantModel, options);
 
       await res.json({ status: "success", data: restaurants });
     } catch (error) {
@@ -97,7 +114,7 @@ module.exports = {
 
     try {
       let options = {
-        where: { CategoryId: catId },
+        where: { cat_id: catId },
         include: [
           {
             model: restaurantModel,
