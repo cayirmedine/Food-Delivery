@@ -225,7 +225,7 @@ module.exports = {
   },
 
   createFood: async (req, res, next) => {
-    const { title, unitPrice, calorie, description, restaurant_id } = req.body;
+    const { title, unitPrice, calories, description, rating, restaurant_id } = req.body;
     const { location, mimetype, size } = req.file;
 
     const t = await sequelize.transaction();
@@ -234,8 +234,9 @@ module.exports = {
         where: {
           title,
           unitPrice,
-          calorie,
+          calories,
           description,
+          rating,
           restaurant_id,
           photoLink: location,
           photoType: mimetype,
@@ -244,8 +245,9 @@ module.exports = {
         defaults: {
           title,
           unitPrice,
-          calorie,
+          calories,
           description,
+          rating,
           restaurant_id,
           photoLink: location,
           photoType: mimetype,
