@@ -33,11 +33,11 @@ module.exports = {
       } else {
         res
           .status(422)
-          .json({ status: "error", error: "User is already exists" });
+          .json({ status: "error", data: "User is already exists" });
       }
 
     } catch (error) {
-      res.status(500).json({ status: "error", error: "Missing parameter(s)" });
+      res.status(500).json({ status: "error", data: "Missing parameter(s)" });
       next(error);
     }
   },
@@ -66,17 +66,17 @@ module.exports = {
         } else {
           res.status(422).json({
             status: "error",
-            error: "Password is not correct",
+            data: "Password is not correct",
           });
         }
       } else {
         res.status(422).json({
           status: "error",
-          error: "Phone number is not correct",
+          data: "Phone number is not correct",
         });
       }
     } catch (error) {
-      res.status(500).json({ status: "error", error: "Missing parameter(s)" });
+      res.status(500).json({ status: "error", data: "Missing parameter(s)" });
       next(error);
     }
   },
@@ -116,7 +116,7 @@ module.exports = {
       } else {
         res.status(422).json({
           status: "error",
-          error: "Password is not correct",
+          data: "Password is not correct",
         });
       }
 
@@ -163,7 +163,7 @@ module.exports = {
       } else {
         res.status(422).json({
           status: "error",
-          error: "Password is not correct",
+          data: "Password is not correct",
         });
       }
     } catch (error) {
@@ -195,7 +195,7 @@ module.exports = {
       } else {
         res.status(422).json({
           status: "error",
-          error: "Password is not correct",
+          data: "Password is not correct",
         });
       }
     } catch (error) {
