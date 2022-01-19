@@ -303,55 +303,37 @@ module.exports = {
   },
 
   createComment: async (req, res, next) => {
-    const { content, user_id, food_id, restaurant_id } = req.body;
+    var { content, user_id, food_id, restaurant_id } = req.body;
 
-    const t = await sequelize.transaction();
+    var t = await sequelize.transaction();
 
-    const Op = Sequelize.Op;
+    var Op = Sequelize.Op;
 
-    try {
-      // let options = {
-      //   args: [content],
-      // };
+    var rating;
 
-      var rating;
-      // await PythonShell.run(
-      //   "/home/baku/Belgeler/Food Delivery/NLP/nlp.py",
-      //   options,
-      //   async function (err, results) {
-      //     if (err) {
-      //       console.log("ERROR FROM PY", err);
-      //       throw err;
-      //     } else {
-      //       await console.log("RESULTT TYPE", typeof results[0]);
-      //       await console.log("RESULTT", results[0]);
-      //       ratingPY = await Number(results[0]);
-      //     }
-      //   }
-      // );
+    let pyshell = await new PythonShell(
+      "/home/baku/Belgeler/Food Delivery/NLP/nlp.py"
+    );
 
-      let pyshell = await new PythonShell(
-        "/home/baku/Belgeler/Food Delivery/NLP/nlp.py"
-      );
+    // sends a message to the Python script via stdin
+    await pyshell.send(content);
 
-      // sends a message to the Python script via stdin
-      await pyshell.send(content);
+    await pyshell.on("message", function (message) {
+      // received a message sent from the Python script (a simple "print" statement)
+      console.log("MESAAGE!!", message[0]);
+      console.log("MESAAGE TYPE!!", typeof message[0]);
+      rating = Number(message[0]);
+    });
 
-      await pyshell.on("message", function (message) {
-        // received a message sent from the Python script (a simple "print" statement)
-        console.log("MESAAGE!!", message[0]);
-        console.log("MESAAGE TYPE!!", typeof message[0]);
-        rating = Number(message[0]);
-      });
+    // end the input stream and allow the process to exit
+    await pyshell.end(async function (err, code, signal) {
+      if (err) throw err;
+      await console.log("Rating!!", rating);
+      console.log("The exit code was: " + code);
+      console.log("The exit signal was: " + signal);
+      console.log("finished");
 
-      // end the input stream and allow the process to exit
-      await pyshell.end(async function (err, code, signal) {
-        if (err) throw err;
-        console.log("Rating!!", rating);
-        console.log("The exit code was: " + code);
-        console.log("The exit signal was: " + signal);
-        console.log("finished");
-
+      try {
         let createOptions = {
           content,
           user_id,
@@ -381,23 +363,32 @@ module.exports = {
 
         var newFoodRating;
 
-        if (commentCount != 0)
+        if (commentCount != (await 0)) {
           newFoodRating =
             (await (foodRating * commentCount + ratingPY)) / (commentCount + 1);
-        else newFoodRating = rating;
+        } else {
+          newFoodRating = await rating;
+        }
 
-        await modelService.update(
+        console.log("NEW FOOD RATING", newFoodRating);
+
+        const updatedFood = await modelService.update(
           foodModel,
           { rating: newFoodRating },
           { where: { id: food_id } },
           { transaction: t }
         );
 
+        console.log("UPDATED FOOD", updatedFood);
+
         var foodCount;
         await foodModel
           .count({ where: { restaurant_id: { [Op.eq]: restaurant_id } } })
           .then((c) => {
             foodCount = c;
+          })
+          .catch((error) => {
+            console.log("ERROR", error);
           });
 
         var restaurant = await modelService.findOne(restaurantModel, {
@@ -419,13 +410,13 @@ module.exports = {
         await t.commit();
 
         res.json({ status: "success", data: comment });
-      });
-    } catch (error) {
-      console.log("HATAAAA", error);
-      res.status(500).json({ status: "error", data: error });
-      await t.rollback();
-      next(error);
-    }
+      } catch (error) {
+        console.log("HATAAAA", error);
+        res.status(500).json({ status: "error", data: error });
+        await t.rollback();
+        next(error);
+      }
+    });
   },
 
   addLocation: async (req, res, next) => {
