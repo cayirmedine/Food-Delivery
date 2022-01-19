@@ -36,7 +36,10 @@ router.post(
 
 router.get("/all-foods", restaurantController.findAllFood);
 
-router.get("/restaurant-foods/:restaurantId", restaurantController.findAllRestaurantFoods);
+router.get(
+  "/restaurant-foods/:restaurantId",
+  restaurantController.findAllRestaurantFoods
+);
 
 router.get("/food/:foodId", restaurantController.findOneFood);
 
@@ -45,5 +48,22 @@ router.post(
   uploadImageS3.single("image"),
   restaurantController.createFood
 );
+
+router.get(
+  "/resturant-comments/:restaurantId",
+  restaurantController.findAllRestaurantComments
+);
+
+router.get("/food-comments/:foodId", restaurantController.findAllFoodComments);
+
+router.post("/add-comment", restaurantController.createComment);
+
+router.post("/add-location", restaurantController.addLocation);
+
+router.get("/restaurant-location/:restauranId", restaurantController.findRestaurantsLocation);
+
+router.put("/edit-location/:restaurantId", restaurantController.updateRestaurantsLocation);
+
+router.delete("/delete-location/:restaurantId", restaurantController.deleteRestaurantsLocation);
 
 module.exports = router;
