@@ -3,6 +3,7 @@ const {
   restaurantModel,
   foodModel,
   commentModel,
+  locationModel,
   sequelize,
   Sequelize,
 } = require("../database/db");
@@ -86,15 +87,16 @@ module.exports = {
               "rating",
             ],
           },
+          {
+            model: locationModel,
+            as: "location",
+            attributes: ["id", "latitude", "longitude"],
+          },
         ],
       };
-      const restaurant = await modelService.findAll(restaurantModel, options);
+      const restaurants = await modelService.findAll(restaurantModel, options);
 
-      let result = {
-          restaurant
-    };
-
-      await res.json({ status: "success", data: result });
+      await res.json({ status: "success", data: restaurants });
     } catch (error) {
       console.log("HATAA", error);
       res.status(500).json({ status: "error", data: error });
@@ -137,13 +139,15 @@ module.exports = {
               "rating",
             ],
           },
+          {
+            model: locationModel,
+            as: "location",
+            attributes: ["id", "latitude", "longitude"],
+          },
         ],
       };
 
-      const restaurants = await modelService.findAll(
-        restaurantModel,
-        options
-      );
+      const restaurants = await modelService.findAll(restaurantModel, options);
 
       await res.json({ status: "success", data: restaurants });
     } catch (error) {
@@ -154,25 +158,21 @@ module.exports = {
   },
 
   createRestaurant: async (req, res, next) => {
-    const { title, deliveryTime, rating, priceRating, cat_id } =
-      await req.body;
+    const { title, deliveryTime, rating, priceRating, cat_id } = await req.body;
     const { location, mimetype, size } = req.file;
 
     const t = await sequelize.transaction();
     try {
-      const restaurant = await modelService.create(
-        restaurantModel,
-        {
-          title,
-          deliveryTime,
-          rating,
-          priceRating,
-          photoLink: location,
-          photoType: mimetype,
-          photoSize: size,
-          cat_id
-        },
-      );
+      const restaurant = await modelService.create(restaurantModel, {
+        title,
+        deliveryTime,
+        rating,
+        priceRating,
+        photoLink: location,
+        photoType: mimetype,
+        photoSize: size,
+        cat_id,
+      });
 
       res.json({ status: "success", data: restaurant });
     } catch (error) {
@@ -424,6 +424,78 @@ module.exports = {
       console.log("HATAAAA", error);
       res.status(500).json({ status: "error", data: error });
       await t.rollback();
+      next(error);
+    }
+  },
+
+  addLocation: async (req, res, next) => {
+    try {
+      const location = await modelService.create(locationModel, req.body);
+
+      res.json({ status: "success", data: location });
+    } catch (error) {
+      res.status(500).json({ status: "error", data: error });
+      next(error);
+    }
+  },
+
+  findRestaurantsLocation: async (req, res, next) => {
+    const { restaurantId } = req.params;
+
+    try {
+      let option = {
+        where: {
+          restaurant_id: restaurantId,
+        },
+      };
+
+      const location = await modelService.findOne(locationModel, option);
+
+      res.json({ status: "success", data: location });
+    } catch (error) {
+      res.status(500).json({ status: "error", data: error });
+      next(error);
+    }
+  },
+
+  updateRestaurantsLocation: async (req, res, next) => {
+    const { restaurantId } = req.params;
+
+    try {
+      let option = {
+        where: {
+          restaurant_id: restaurantId,
+        },
+      };
+
+      const updatedLocation = await modelService.update(
+        locationModel,
+        req.body,
+        option
+      );
+
+      res.json({ status: "success", data: updatedLocation });
+    } catch (error) {
+      res.status(500).json({ status: "error", data: error });
+      next(error);
+    }
+  },
+
+  deleteRestaurantsLocation: async (req, res, next) => {
+    const { restaurantId } = req.params;
+
+    try {
+      let option = {
+        where: {
+          restaurant_id: restaurantId,
+        },
+      };
+
+      const deletedLocation = await modelService.delete(locationModel, option);
+
+      res.json({ status: "success", data: deletedLocation });
+    } catch (error) {
+      res.status(500).json({ status: "error", data: error });
       next(error);
     }
   },
