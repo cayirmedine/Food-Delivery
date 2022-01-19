@@ -2,10 +2,13 @@ const {
   restaurantCatModel,
   restaurantModel,
   foodModel,
-  restaurantCatRelationalModel,
+  commentModel,
   sequelize,
+  Sequelize,
 } = require("../database/db");
 const modelService = require("../services/modelService");
+
+const { PythonShell } = require("python-shell");
 
 module.exports = {
   findAllCategories: async (req, res, next) => {
@@ -85,11 +88,15 @@ module.exports = {
           },
         ],
       };
-      const restaurants = await modelService.findAll(restaurantModel, options);
+      const restaurant = await modelService.findAll(restaurantModel, options);
 
-      await res.json({ status: "success", data: restaurants });
+      let result = {
+          restaurant
+    };
+
+      await res.json({ status: "success", data: result });
     } catch (error) {
-      console.log("HATAA", error)
+      console.log("HATAA", error);
       res.status(500).json({ status: "error", data: error });
       next(error);
     }
@@ -118,22 +125,23 @@ module.exports = {
         where: { cat_id: catId },
         include: [
           {
-            model: restaurantModel,
-            // as: "RestaurantCats",
+            model: foodModel,
+            as: "menu",
             attributes: [
               "id",
               "title",
-              "deliveryTime",
               "photoLink",
+              "description",
+              "calories",
+              "unitPrice",
               "rating",
-              "priceRating",
             ],
           },
         ],
       };
 
       const restaurants = await modelService.findAll(
-        restaurantCatRelationalModel,
+        restaurantModel,
         options
       );
 
@@ -146,7 +154,7 @@ module.exports = {
   },
 
   createRestaurant: async (req, res, next) => {
-    const { title, deliveryTime, rating, priceRating, cat_ids } =
+    const { title, deliveryTime, rating, priceRating, cat_id } =
       await req.body;
     const { location, mimetype, size } = req.file;
 
@@ -162,32 +170,14 @@ module.exports = {
           photoLink: location,
           photoType: mimetype,
           photoSize: size,
+          cat_id
         },
-        { transaction: t }
       );
-
-      console.log("RESTAURANT ID", restaurant.dataValues.id)
-      for (const cat_id of cat_ids) {
-        await console.log("CAT ID", cat_id);
-        await console.log("RESTAURANT ID", restaurant.dataValues.id);
-
-        await modelService.create(
-          restaurantCatRelationalModel,
-          {
-            cat_id,
-            restaurant_id: Number(restaurant.dataValues.id),  
-          },
-          { transaction: t }
-        );
-      }
-
-      await t.commit();
 
       res.json({ status: "success", data: restaurant });
     } catch (error) {
       await console.log("HATAA", error);
       res.status(500).json({ status: "error", data: error });
-      await t.rollback();
       next(error);
     }
   },
@@ -236,6 +226,7 @@ module.exports = {
     const { location, mimetype, size } = req.file;
 
     const t = await sequelize.transaction();
+
     try {
       const food = await modelService.findOrCreate(foodModel, {
         where: {
@@ -267,7 +258,170 @@ module.exports = {
 
       res.json({ status: "success", data: food });
     } catch (error) {
+      res.status(500).json({ status: "error", data: error });
+      await t.rollback();
+      next(error);
+    }
+  },
 
+  findAllRestaurantComments: async (req, res, next) => {
+    const { restaurantId } = req.params;
+
+    try {
+      let options = {
+        where: {
+          restaurant_id: restaurantId,
+        },
+      };
+
+      const comments = await modelService.findAll(commentModel, options);
+
+      res.json({ status: "success", data: comments });
+    } catch (error) {
+      res.status(500).json({ status: "error", data: error });
+      next(error);
+    }
+  },
+
+  findAllFoodComments: async (req, res, next) => {
+    const { foodId } = req.params;
+
+    try {
+      let options = {
+        where: {
+          food_id: foodId,
+        },
+      };
+
+      const comments = await modelService.findAll(commentModel, options);
+
+      res.json({ status: "success", data: comments });
+    } catch (error) {
+      res.status(500).json({ status: "error", data: error });
+      next(error);
+    }
+  },
+
+  createComment: async (req, res, next) => {
+    const { content, user_id, food_id, restaurant_id } = req.body;
+
+    const t = await sequelize.transaction();
+
+    const Op = Sequelize.Op;
+
+    try {
+      // let options = {
+      //   args: [content],
+      // };
+
+      var rating;
+      // await PythonShell.run(
+      //   "/home/baku/Belgeler/Food Delivery/NLP/nlp.py",
+      //   options,
+      //   async function (err, results) {
+      //     if (err) {
+      //       console.log("ERROR FROM PY", err);
+      //       throw err;
+      //     } else {
+      //       await console.log("RESULTT TYPE", typeof results[0]);
+      //       await console.log("RESULTT", results[0]);
+      //       ratingPY = await Number(results[0]);
+      //     }
+      //   }
+      // );
+
+      let pyshell = await new PythonShell(
+        "/home/baku/Belgeler/Food Delivery/NLP/nlp.py"
+      );
+
+      // sends a message to the Python script via stdin
+      await pyshell.send(content);
+
+      await pyshell.on("message", function (message) {
+        // received a message sent from the Python script (a simple "print" statement)
+        console.log("MESAAGE!!", message[0]);
+        console.log("MESAAGE TYPE!!", typeof message[0]);
+        rating = Number(message[0]);
+      });
+
+      // end the input stream and allow the process to exit
+      await pyshell.end(async function (err, code, signal) {
+        if (err) throw err;
+        console.log("Rating!!", rating);
+        console.log("The exit code was: " + code);
+        console.log("The exit signal was: " + signal);
+        console.log("finished");
+
+        let createOptions = {
+          content,
+          user_id,
+          food_id,
+          restaurant_id,
+          rating,
+        };
+
+        const comment = await modelService.create(commentModel, createOptions, {
+          transaction: t,
+        });
+
+        var commentCount;
+        await commentModel
+          .count({ where: { food_id: { [Op.eq]: food_id } } })
+          .then((c) => {
+            commentCount = c;
+          });
+
+        var food = await modelService.findOne(foodModel, {
+          where: { id: food_id },
+        });
+
+        await console.log("Comment Count", commentCount);
+
+        var foodRating = await food.dataValues.rating;
+
+        var newFoodRating;
+
+        if (commentCount != 0)
+          newFoodRating =
+            (await (foodRating * commentCount + ratingPY)) / (commentCount + 1);
+        else newFoodRating = rating;
+
+        await modelService.update(
+          foodModel,
+          { rating: newFoodRating },
+          { where: { id: food_id } },
+          { transaction: t }
+        );
+
+        var foodCount;
+        await foodModel
+          .count({ where: { restaurant_id: { [Op.eq]: restaurant_id } } })
+          .then((c) => {
+            foodCount = c;
+          });
+
+        var restaurant = await modelService.findOne(restaurantModel, {
+          where: { id: restaurant_id },
+        });
+
+        newRestaurantRating =
+          (await (restaurant.dataValues.rating * foodCount -
+            foodRating +
+            newFoodRating)) / foodCount;
+
+        await modelService.update(
+          restaurantModel,
+          { rating: newRestaurantRating },
+          { where: { id: restaurant_id } },
+          { transaction: t }
+        );
+
+        await t.commit();
+
+        res.json({ status: "success", data: comment });
+      });
+    } catch (error) {
+      console.log("HATAAAA", error);
       res.status(500).json({ status: "error", data: error });
       await t.rollback();
       next(error);
