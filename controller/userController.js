@@ -32,7 +32,6 @@ module.exports = {
         res.json({ status: "success", data: user });
       } else {
         res
-          .status(422)
           .json({ status: "error", data: "User is already exists" });
       }
 
@@ -64,13 +63,13 @@ module.exports = {
         if (validPassword) {
           await res.json({ status: "success", data: user });
         } else {
-          res.status(422).json({
+          res.json({
             status: "error",
             data: "Password is not correct",
           });
         }
       } else {
-        res.status(422).json({
+        res.json({
           status: "error",
           data: "Phone number is not correct",
         });
@@ -114,7 +113,7 @@ module.exports = {
           condition
         );
       } else {
-        res.status(422).json({
+        res.json({
           status: "error",
           data: "Password is not correct",
         });
@@ -161,7 +160,7 @@ module.exports = {
           next(error);
         }
       } else {
-        res.status(422).json({
+        res.json({
           status: "error",
           data: "Password is not correct",
         });
@@ -193,7 +192,7 @@ module.exports = {
 
         res.json({ status: "success", data: deletedUser });
       } else {
-        res.status(422).json({
+        res.json({
           status: "error",
           data: "Password is not correct",
         });
