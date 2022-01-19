@@ -26,6 +26,7 @@ const comment = require("../models/restaurant/comments");
 const address = require("../models/common/address");
 const city = require("../models/common/city");
 const fav = require("../models/common/favorites");
+const location = require("../models/common/location");
 
 //Cart Models
 const order = require("../models/cart/order");
@@ -44,6 +45,7 @@ const favModel = fav(sequelize, Sequelize);
 const orderModel = order(sequelize, Sequelize);
 const orderFoodModel = orderFood(sequelize, Sequelize);
 const commentModel = comment(sequelize, Sequelize);
+const locationModel = location(sequelize, Sequelize);
 
 addressModel.belongsTo(userModel, { foreignKey: "user_id" });
 userModel.hasMany(addressModel, { foreignKey: "user_id" });
@@ -82,6 +84,12 @@ foodModel.hasMany(commentModel, { foreignKey: "food_id" });
 commentModel.belongsTo(restaurantModel, { foreignKey: "restaurant_id" });
 restaurantModel.hasMany(commentModel, { foreignKey: "restaurant_id" });
 
+locationModel.belongsTo(restaurantModel, { foreignKey: "restaurant_id" });
+restaurantModel.hasOne(locationModel, {
+  foreignKey: "restaurant_id",
+  as: "location",
+});
+
 module.exports = {
   userModel,
   restaurantCatModel,
@@ -93,6 +101,7 @@ module.exports = {
   orderModel,
   orderFoodModel,
   commentModel,
+  locationModel,
   sequelize,
   Sequelize,
 };
