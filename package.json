@@ -20,6 +20,8 @@
     "multer-s3": "^2.10.0",
     "mysql": "^2.18.1",
     "mysql2": "^2.3.3",
+    "node-calls-python": "^1.5.2",
+    "python-shell": "^3.0.1",
     "random-key": "^0.3.2",
     "sequelize": "^6.12.5",
     "validatorjs": "^3.22.1"
