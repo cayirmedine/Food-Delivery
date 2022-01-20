@@ -1,6 +1,6 @@
 const modelService = require("../services/modelService");
 
-const { favModel, addressModel } = require("../database/db");
+const { favModel, addressModel, restaurantModel } = require("../database/db");
 
 module.exports = {
   addFav: async (req, res, next) => {
@@ -18,9 +18,14 @@ module.exports = {
     try {
       const { userId } = req.params;
 
-      const userFavs = await modelService.findAll(favModel, {
+      let options = {
         where: { user_id: userId },
-      });
+        include: [
+          { model: restaurantModel, attributes: ["id", "title", "photoLink"] },
+        ],
+      };
+
+      const userFavs = await modelService.findAll(favModel, options);
 
       res.json({ status: "success", data: userFavs });
     } catch (error) {
