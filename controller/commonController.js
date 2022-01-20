@@ -4,11 +4,23 @@ const { favModel, addressModel, restaurantModel } = require("../database/db");
 
 module.exports = {
   addFav: async (req, res, next) => {
+    const { user_id, restaurant_id } = req.body;
+
     try {
-      const fav = await modelService.create(favModel, req.body);
+      const fav = await modelService.findOrCreate(favModel, {
+        where: {
+          user_id,
+          restaurant_id,
+        },
+        defaults: {
+          user_id,
+          restaurant_id,
+        },
+      });
 
       res.json({ status: "success", data: fav });
     } catch (error) {
+      console.log("ERROR", error);
       res.status(500).json({ status: "error", data: error });
       next(error);
     }
