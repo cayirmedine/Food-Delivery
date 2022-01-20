@@ -2,7 +2,7 @@ from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import torch
 import sys
 
-x = sys.argv[0]
+x = sys.stdin.read()
 
 tokenizer = AutoTokenizer.from_pretrained(
     'nlptown/bert-base-multilingual-uncased-sentiment')

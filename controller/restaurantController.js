@@ -342,9 +342,11 @@ module.exports = {
           rating,
         };
 
-        const comment = await modelService.create(commentModel, createOptions, {
-          transaction: t,
-        });
+        const comment = await modelService.create(
+          commentModel,
+          createOptions,
+          //{ transaction: t}
+        );
 
         var commentCount;
         await commentModel
@@ -365,7 +367,7 @@ module.exports = {
 
         if (commentCount != (await 0)) {
           newFoodRating =
-            (await (foodRating * commentCount + ratingPY)) / (commentCount + 1);
+            (await (foodRating * commentCount + rating)) / (commentCount + 1);
         } else {
           newFoodRating = await rating;
         }
@@ -376,7 +378,7 @@ module.exports = {
           foodModel,
           { rating: newFoodRating },
           { where: { id: food_id } },
-          { transaction: t }
+          //{ transaction: t }
         );
 
         console.log("UPDATED FOOD", updatedFood);
@@ -404,16 +406,16 @@ module.exports = {
           restaurantModel,
           { rating: newRestaurantRating },
           { where: { id: restaurant_id } },
-          { transaction: t }
+          //{ transaction: t }
         );
 
-        await t.commit();
+        //await t.commit();
 
         res.json({ status: "success", data: comment });
       } catch (error) {
         console.log("HATAAAA", error);
         res.status(500).json({ status: "error", data: error });
-        await t.rollback();
+        //await t.rollback();
         next(error);
       }
     });
