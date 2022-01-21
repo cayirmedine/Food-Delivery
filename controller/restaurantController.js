@@ -311,9 +311,7 @@ module.exports = {
 
     var rating;
 
-    let pyshell = await new PythonShell(
-      "/home/baku/Belgeler/Food Delivery/NLP/nlp.py"
-    );
+    let pyshell = await new PythonShell("NLP/nlp.py");
 
     // sends a message to the Python script via stdin
     await pyshell.send(content);
@@ -344,7 +342,7 @@ module.exports = {
 
         const comment = await modelService.create(
           commentModel,
-          createOptions,
+          createOptions
           //{ transaction: t}
         );
 
@@ -377,7 +375,7 @@ module.exports = {
         const updatedFood = await modelService.update(
           foodModel,
           { rating: newFoodRating },
-          { where: { id: food_id } },
+          { where: { id: food_id } }
           //{ transaction: t }
         );
 
@@ -405,7 +403,7 @@ module.exports = {
         await modelService.update(
           restaurantModel,
           { rating: newRestaurantRating },
-          { where: { id: restaurant_id } },
+          { where: { id: restaurant_id } }
           //{ transaction: t }
         );
 
