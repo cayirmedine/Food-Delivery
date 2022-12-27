@@ -343,7 +343,6 @@ module.exports = {
         const comment = await modelService.create(
           commentModel,
           createOptions
-          //{ transaction: t}
         );
 
         var commentCount;
@@ -376,7 +375,6 @@ module.exports = {
           foodModel,
           { rating: newFoodRating },
           { where: { id: food_id } }
-          //{ transaction: t }
         );
 
         console.log("UPDATED FOOD", updatedFood);
@@ -404,10 +402,7 @@ module.exports = {
           restaurantModel,
           { rating: newRestaurantRating },
           { where: { id: restaurant_id } }
-          //{ transaction: t }
         );
-
-        //await t.commit();
 
         res.json({ status: "success", data: comment });
       } catch (error) {

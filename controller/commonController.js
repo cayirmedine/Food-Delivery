@@ -130,24 +130,6 @@ module.exports = {
 
   addAddress: async (req, res, next) => {
     try {
-      // const {
-      //   addressTitle,
-      //   town,
-      //   neigbourhood,
-      //   addressDetail,
-      //   user_id,
-      //   restaurant_id,
-      // } = req.body;
-
-      //   let options = {
-      //     addressTitle,
-      //     town,
-      //     neigbourhood,
-      //     addressDetail,
-      //     user_id,
-      //     restaurant_id
-      //   };
-
       const address = await modelService.create(addressModel, req.body);
 
       res.json({ status: "success", data: address });
